@@ -56,7 +56,7 @@ function newWB() {
     
       socket.on('drawing', onDrawingEvent);
     
-      window.addEventListener('resize', onResize, false);
+      // window.addEventListener('resize', onResize, false);
       onResize();
     
     
