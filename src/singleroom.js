@@ -14,13 +14,18 @@ const apiCallJoin = (roomName) => {
     if(getCookie("user_id")){
         user_id = getCookie("user_id")
     }
-    axios.get('http://localhost:5000/rooms.join', {params:{roomName: roomName, user_id: user_id}})
+    // axios.get('http://localhost:5000/rooms.join', {params:{roomName: roomName, user_id: user_id}})
+    axios.get('https://camp-live.herokuapp.com/rooms.join', {params:{roomName: roomName, user_id: user_id}})
     .then(function (response) {
         // handle success
         console.log(response);
         socket.emit("joinRoom", roomName)
         socket.emit("updateUserId", response.data.user_id)
+        socket.emit("userAdmin", response.data.is_admin)
+        console.log("user_id=" + response.data.user_id + "; is_admin=" + response.data.is_admin)
         document.cookie = "user_id=" + response.data.user_id;
+        document.cookie = "is_admin=" + response.data.is_admin;
+
     })
     .catch(function (error) {
         // handle error
@@ -52,7 +57,9 @@ const axios = require('axios').default;
 
 function SingleRoom() {
     const [firstTime, setFirstTime] = useState(true);
+    const [onlineNumber, setOnlineNumber] = useState(0);
 
+    socket.on('online-users', (onlineNumber)=>{console.log(onlineNumber); setOnlineNumber(onlineNumber);});
     useEffect(() => {
         if(firstTime && socketDone){
             setFirstTime(false)
@@ -65,6 +72,7 @@ function SingleRoom() {
     
     return (
         <div className="main">
+            <div>Online Users - {onlineNumber}</div>
             <MenuTabs/>
         </div>
     );

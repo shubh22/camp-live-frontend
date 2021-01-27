@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import YouTube from 'react-youtube';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
@@ -7,6 +7,7 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
 import socket from './commonSocket.js'
+
 
 const useStyles = makeStyles({
     root: {
@@ -32,29 +33,68 @@ const opts1 = {
     },
 };
 
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+    }
+    if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+    }
+    }
+    return false;
+}
+
 function Video() {
     const [selectedVideo, setSelectedVideo] = useState(false);
+    const [firstTime, setFirstTime] = useState(true);
+    const [isAdmin, setIsAdmin] = useState("false");
     const classes = useStyles();
+    
+
+    useEffect(() => {
+        if(firstTime){
+            setFirstTime(false)
+            setIsAdmin(getCookie("is_admin"));
+        }
+    })
+
+
     const selectVideo = (number) => {
         setSelectedVideo(number)
         socket.emit('select-video', number)
     }
     const handleBack = () => {
         setSelectedVideo(false)
+        socket.emit('end-session', "1")
     }
     const startSession = () =>{
         socket.emit('start-session', "1")
     }
-
+    
+    socket.on('new-admin', (id)=>{
+        if(getCookie("user_id") === String(id)){
+            document.cookie = "is_admin=" + "true";
+            setIsAdmin("true")
+            setSelectedVideo(false)
+        }
+        else(
+            setSelectedVideo(false)
+        )
+      });
     const onReady= (event) => {
         // access to player in all event handlers via event.target
         // event.target.pauseVideo();
         console.log(event.target.getCurrentTime())
       }
+
+      
     let done = false;
     const onStateChange= (event) => {
-          console.log(event)
-          
           if(event.data === 1 && !done){
             var time = event.target.getCurrentTime()
             socket.emit('play-video', time)
@@ -68,12 +108,12 @@ function Video() {
           socket.on('play-video', (time)=>{event.target.seekTo(time); event.target.playVideo()});
           socket.on('pause-video', ()=>{event.target.stopVideo()});
       }
-
+      
       socket.on('select-video', (number)=>{setSelectedVideo(number)});
-    
-    
+      socket.on('end-session', (number)=>{setSelectedVideo(false)});
+      
 
-    if(!selectedVideo){
+    if((!selectedVideo) && (isAdmin === "true")){
         return (
             <div>
                 <p>Videos</p>
@@ -128,12 +168,29 @@ function Video() {
             </div>
         );
     }
+    else if(!selectedVideo && (isAdmin === "false")){
+        return (
+            <div>
+                <p>Videos</p>
+                <div>Wait for Session to Start</div>
+            </div>
+        );
+    }
+    else if(selectedVideo && (isAdmin === "true")){
+        return(
+        <div>
+                <p>Videos</p>
+                <Button size="small" color="secondary" onClick={() => handleBack()} >End Video Session</Button>
+                <YouTube videoId={selectedVideo} opts={opts1} onStateChange={(e) => onStateChange(e)} onReady={(e)=>onReady(e)} />;
+        
+            </div>
+        )
+    }
     else{
         return (
            
             <div>
                 <p>Videos</p>
-                <Button size="small" color="secondary" onClick={() => handleBack()} >Back to Videos</Button>
                 <YouTube videoId={selectedVideo} opts={opts1} onStateChange={(e) => onStateChange(e)} onReady={(e)=>onReady(e)} />;
         
             </div>

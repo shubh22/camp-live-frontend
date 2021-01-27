@@ -23,7 +23,8 @@ function Rooms() {
     })
 
     const apiCall = (roomName) => {
-        axios.get('http://localhost:5000/rooms.create', {params:{roomName: roomName}})
+        // axios.get('http://localhost:5000/rooms.create', {params:{roomName: roomName}})
+        axios.get('https://camp-live.herokuapp.com/rooms.create', {params:{roomName: roomName}})
         .then(function (response) {
             // handle success
             console.log(response);
@@ -54,7 +55,8 @@ function Rooms() {
     };
 
     const apiCallList = () => {
-        axios.get('http://localhost:5000/rooms.list')
+        // axios.get('http://localhost:5000/rooms.list')
+        axios.get('https://camp-live.herokuapp.com/rooms.list')
         .then(function (response) {
             // handle success
             let final = []
