@@ -28,6 +28,7 @@ function Rooms() {
         .then(function (response) {
             // handle success
             console.log(response);
+            apiCallList()
         })
         .catch(function (error) {
             // handle error
