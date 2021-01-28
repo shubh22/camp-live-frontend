@@ -38,7 +38,8 @@ function Rooms() {
 
     const apiCallJoin = (roomName) => {
         
-        history.push("/rooms/" + roomName);
+        // history.push("/rooms/" + roomName);
+        window.location.href = "https://camp-live-frontend.herokuapp.com/rooms/" + roomName;
         // let user_id = false
         // if(getCookie("user_id")){
         //     user_id = getCookie("user_id")
