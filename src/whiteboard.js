@@ -104,22 +104,23 @@ function newWB() {
       function onMouseDown(e){
         drawing = true;
         console.log(e)
-        current.x = String(Number(e.offsetX||e.touches[0].clientX) -0);
-        current.y = String(Number(e.offsetY||e.touches[0].clientY) - 0);
+        current.x = String(Number(e.offsetX||e.touches[0].pageX) -0);
+        current.y = String(Number(e.offsetY||e.touches[0].pageY) - 0);
         console.log(current)
       }
     
       function onMouseUp(e){
         if (!drawing) { return; }
         drawing = false;
-        drawLine(current.x, current.y, String(Number(e.offsetX||e.touches[0].clientX) -0), String(Number(e.offsetY||e.touches[0].clientY) - 0), current.color, true);
+        console.log("up - ", e)
+        drawLine(current.x, current.y, String(Number(e.offsetX||e.changedTouches[0].pageX) -0), String(Number(e.offsetY||e.changedTouches[0].pageY) - 0), current.color, true);
       }
     
       function onMouseMove(e){
         if (!drawing) { return; }
-        drawLine(current.x, current.y, String(Number(e.offsetX||e.touches[0].clientX) -0), String(Number(e.offsetY||e.touches[0].clientY) - 0), current.color, true);
-        current.x = String(Number(e.offsetX||e.touches[0].clientX) -0);
-        current.y = String(Number(e.offsetY||e.touches[0].clientY) - 0);
+        drawLine(current.x, current.y, String(Number(e.offsetX||e.touches[0].pageX) -0), String(Number(e.offsetY||e.touches[0].pageY) - 0), current.color, true);
+        current.x = String(Number(e.offsetX||e.touches[0].pageX) -0);
+        current.y = String(Number(e.offsetY||e.touches[0].pageY) - 0);
       }
     
       function onColorUpdate(e){
