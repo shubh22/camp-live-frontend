@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import socket from './commonSocket.js'
+import Button from '@material-ui/core/Button';
 
 function Whiteboard() {
     const [firstTime, setFirstTime] = useState(true);
@@ -10,17 +11,26 @@ function Whiteboard() {
             newWB();
         }
     })
+
+    const clear = () => {
+      sessionStorage.clear(); 
+      var canvas = document.getElementsByClassName('whiteboard')[0];
+      canvas.width = document.getElementsByClassName("main-wb")[0].clientWidth;
+      canvas.height = String(Math.ceil(Number(document.getElementsByClassName("main-wb")[0].clientWidth)*9/16))
+    };
     return (
         <div className="main-wb">
-            <canvas className="whiteboard" ></canvas>
+            
 
             <div className="colors">
-            <div className="color black"></div>
-            <div className="color red"></div>
-            <div className="color green"></div>
-            <div className="color blue"></div>
-            <div className="color yellow"></div>
+              <div className="color black"></div>
+              <div className="color red"></div>
+              <div className="color green"></div>
+              <div className="color blue"></div>
+              <div className="color yellow"></div>
             </div>
+            {/* <Button color="primary" variant="contained" onClick={() => clear() }>Clear Board</Button> */}
+            <canvas className="whiteboard" ></canvas>
         </div>
     );
 }
@@ -29,7 +39,12 @@ export default Whiteboard;
 
 
 function newWB() {
-
+      console.log("WBWBWB")
+      let roomName = window.location.pathname.split('/')[2]
+      if(sessionStorage.getItem("counter" + roomName) === null){
+        sessionStorage.setItem("counter" + roomName, 0)
+      }
+      
       var canvas = document.getElementsByClassName('whiteboard')[0];
       var colors = document.getElementsByClassName('color');
       var context = canvas.getContext('2d');
@@ -55,9 +70,9 @@ function newWB() {
       }
     
       socket.on('drawing', onDrawingEvent);
-    
-      // window.addEventListener('resize', onResize, false);
+      window.addEventListener('resize', onResize1, false);
       onResize();
+      onResize1()
     
     
       function drawLine(x0, y0, x1, y1, color, emit){
@@ -72,33 +87,39 @@ function newWB() {
         if (!emit) { return; }
         var w = canvas.width;
         var h = canvas.height;
-    
-        socket.emit('drawing', {
+        
+        var sendEvent = {
           x0: x0 / w,
           y0: y0 / h,
           x1: x1 / w,
           y1: y1 / h,
           color: color
-        });
+        }
+        socket.emit('drawing', sendEvent);
+        var counterX = sessionStorage.getItem("counter" + roomName)
+        sessionStorage.setItem(String(Number(counterX)+1) + roomName, JSON.stringify(sendEvent))
+        sessionStorage.setItem("counter" + roomName, Number(counterX) + 1);
       }
     
       function onMouseDown(e){
         drawing = true;
-        current.x = e.clientX||e.touches[0].clientX;
-        current.y = e.clientY||e.touches[0].clientY;
+        console.log(e)
+        current.x = String(Number(e.offsetX||e.touches[0].clientX) -0);
+        current.y = String(Number(e.offsetY||e.touches[0].clientY) - 0);
+        console.log(current)
       }
     
       function onMouseUp(e){
         if (!drawing) { return; }
         drawing = false;
-        drawLine(current.x, current.y, e.clientX||e.touches[0].clientX, e.clientY||e.touches[0].clientY, current.color, true);
+        drawLine(current.x, current.y, String(Number(e.offsetX||e.touches[0].clientX) -0), String(Number(e.offsetY||e.touches[0].clientY) - 0), current.color, true);
       }
     
       function onMouseMove(e){
         if (!drawing) { return; }
-        drawLine(current.x, current.y, e.clientX||e.touches[0].clientX, e.clientY||e.touches[0].clientY, current.color, true);
-        current.x = e.clientX||e.touches[0].clientX;
-        current.y = e.clientY||e.touches[0].clientY;
+        drawLine(current.x, current.y, String(Number(e.offsetX||e.touches[0].clientX) -0), String(Number(e.offsetY||e.touches[0].clientY) - 0), current.color, true);
+        current.x = String(Number(e.offsetX||e.touches[0].clientX) -0);
+        current.y = String(Number(e.offsetY||e.touches[0].clientY) - 0);
       }
     
       function onColorUpdate(e){
@@ -121,13 +142,49 @@ function newWB() {
       function onDrawingEvent(data){
         var w = canvas.width;
         var h = canvas.height;
+        var counterN = sessionStorage.getItem("counter" + roomName)
+        sessionStorage.setItem(String(Number(counterN)+1) + roomName, JSON.stringify(data))
+        sessionStorage.setItem("counter" + roomName, Number(counterN) + 1);
+        drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color);
+      }
+
+      function onDrawingEvent1(data){
+        var w = canvas.width;
+        var h = canvas.height;
         drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color);
       }
     
       // make the canvas fill its parent
       function onResize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = document.getElementsByClassName("main-wb")[0].clientWidth;
+        // canvas.height = String(Number(document.getElementsByClassName("main-wb")[0].clientHeight) - 55);
+        canvas.height = String(Math.ceil(Number(document.getElementsByClassName("main-wb")[0].clientWidth)*9/16))
       }
+
+      function onResize1() {
+        canvas.width = document.getElementsByClassName("main-wb")[0].clientWidth;
+        // canvas.height = String(Number(document.getElementsByClassName("main-wb")[0].clientHeight) - 55);
+        canvas.height = String(Math.ceil(Number(document.getElementsByClassName("main-wb")[0].clientWidth)*9/16))
+
+        var counterX = sessionStorage.getItem("counter" + roomName);
+        for(var c=0; c<Number(counterX); c++){
+          if(c > 0){
+            if(sessionStorage.getItem(String(Number(c)) + roomName) !== null){
+              console.log("hello")
+              onDrawingEvent1(JSON.parse(sessionStorage.getItem(String(Number(c)) + roomName)))
+            }
+            
+          }
+        }
+
+
+      }
+      // function onResize1() {
+      //   console.log(document.getElementsByClassName("main-wb")[0].clientWidth)
+      //   // canvas.width = document.getElementsByClassName("main-wb")[0].clientWidth;
+      //   // canvas.height = String(Number(document.getElementsByClassName("main-wb")[0].clientHeight) - 55);
+      //   canvas.style.width = (document.getElementsByClassName("main-wb")[0].clientWidth);
+      //   canvas.style.height = (String(Number(document.getElementsByClassName("main-wb")[0].clientHeight) - 55));
+      // }
     
     }
