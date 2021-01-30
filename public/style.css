@@ -28,10 +28,11 @@
     position: relative;
     height: 100%;
    }
-   h1{
+   h1, h2{
     display: block;
     float: left;
     position: relative;
+    width: 100%;
    }
    .main{
     display: block;
