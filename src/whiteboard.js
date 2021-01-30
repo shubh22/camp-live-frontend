@@ -60,10 +60,10 @@ function newWB() {
       canvas.addEventListener('mousemove', throttle(onMouseMove, 10), false);
       
       //Touch support for mobile devices
-      canvas.addEventListener('touchstart', onMouseDown, false);
-      canvas.addEventListener('touchend', onMouseUp, false);
-      canvas.addEventListener('touchcancel', onMouseUp, false);
-      canvas.addEventListener('touchmove', throttle(onMouseMove, 10), false);
+      canvas.addEventListener('touchstart', onMouseDown1, false);
+      canvas.addEventListener('touchend', onMouseUp1, false);
+      canvas.addEventListener('touchcancel', onMouseUp1, false);
+      canvas.addEventListener('touchmove', throttle(onMouseMove1, 10), false);
     
       for (var i = 0; i < colors.length; i++){
         colors[i].addEventListener('click', onColorUpdate, false);
@@ -121,6 +121,27 @@ function newWB() {
         drawLine(current.x, current.y, String(Number(e.offsetX||e.touches[0].pageX) -0), String(Number(e.offsetY||e.touches[0].pageY) - 0), current.color, true);
         current.x = String(Number(e.offsetX||e.touches[0].pageX) -0);
         current.y = String(Number(e.offsetY||e.touches[0].pageY) - 0);
+      }
+
+      function onMouseDown1(e){
+        console.log(e)
+        drawing = true;
+        current.x = e.touches[0].clientX
+        current.y = e.touches[0].clientY
+      }
+    
+      function onMouseUp1(e){
+        console.log(e)
+        if (!drawing) { return; }
+        drawing = false;
+        drawLine(current.x, current.y, e.changedTouches[0].clientX, e.changedTouches[0].clientY, current.color, true);
+      }
+    
+      function onMouseMove1(e){
+        if (!drawing) { return; }
+        drawLine(current.x, current.y, e.touches[0].clientX, e.touches[0].clientY, current.color, true);
+        current.x = e.touches[0].clientX
+        current.y = e.touches[0].clientY
       }
     
       function onColorUpdate(e){
